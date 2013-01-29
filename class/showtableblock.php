@@ -84,5 +84,3 @@ class ShowTableBlock extends \Block
 
 }
 
-
-

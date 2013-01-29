@@ -40,7 +40,7 @@ class BlockStorage implements \IBlockStorage
 	 */
 	public function __construct($storage_opts)
 	{
-		$this->config = parse_ini_file($storage_opts, TRUE);
+		$this->config = json_decode(file_get_contents($storage_opts), TRUE);
 	}
 
 
@@ -74,10 +74,10 @@ class BlockStorage implements \IBlockStorage
 		$prefix = dirname($block);
 
 		// Check if block exists
-		if (!isset($this->config[$prefix])) {
+		if (!isset($this->config['entities'][$prefix])) {
 			return false;
 		}
-		$cfg = $this->config[$prefix];
+		$cfg = $this->config['entities'][$prefix];
 
 		// Prepare driver
 		if (isset($this->drivers[$prefix])) {
@@ -110,7 +110,7 @@ class BlockStorage implements \IBlockStorage
 	 */
 	public function load_block ($block)
 	{
-		return isset($this->config[dirname($block)]);
+		return isset($this->config['entities'][dirname($block)]);
 	}
 
 
@@ -149,7 +149,7 @@ class BlockStorage implements \IBlockStorage
 	 */
 	public function get_known_blocks (& $blocks = array())
 	{
-		foreach ($this->config as $prefix => $cfg) {
+		foreach ($this->config['entities'] as $prefix => $cfg) {
 			$plugin = preg_replace('/\/.*/', '', $prefix);
 			foreach (array('describe', 'list', 'show_table') as $b) {
 				$blocks[$plugin][] = $prefix.'/'.$b;
