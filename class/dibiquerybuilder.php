@@ -30,72 +30,46 @@
 
 namespace SimpleCrud;
 
-
-class DibiDriver extends AbstractDriver
+class DibiQueryBuilder implements IQueryBuilder
 {
-	protected $default_query_class = '\SimpleCrud\DibiQueryBuilder';
+	private $query;
+	private $result;
+	private $total_count;
 
-	private $table;
-	private $dbinfo;
-
-
-	public function __construct($prefix, $config)
+	public function __construct(AbstractDriver $driver)
 	{
-		parent::__construct($prefix, $config);
+		$this->query = \dibi::select('*');
+		$this->query->setFlag('SQL_CALC_FOUND_ROWS');
+		$this->query->from($driver->get_config('db_table'));
 
-		$this->table = $this->config['db_table'];
-		$this->dbinfo = \dibi::getDatabaseInfo();
+		// Default limit (filters can override this)
+		$this->query->limit(50);
 	}
 
 
-	public function get_config($key = null)
+	public function add_filters($filters)
 	{
-		if ($key === null) {
-			return $this->config;
-		} else {
-			return $this->config[$key];
+		foreach ($filters as $filter => $value) {
 		}
 	}
 
 
-	public function describe()
+	public function execute()
 	{
-		if (!$this->dbinfo->hasTable($this->table)) {
-			error_msg('Requested table "%s" does not exist!', $this->table);
-			return false;
-		}
+		$this->result = $this->query->execute();
+		$this->total_count = \dibi::query('SELECT FOUND_ROWS()')->fetchSingle();
+	}
 
-		$info = $this->dbinfo->getTable($this->table);
 
-		// Get properties
-		$properties = array();
-		foreach($info->getColumns() as $col) {
-			$properties[$col->getName()] = array(
-				'name' => $col->getName(),
-				'type' => $col->getNativeType(),
-				'size' => $col->getSize(),
-				'default' => $col->getDefault(),
-				'optional' => $col->isNullable(),
-			);
-		}
+	public function get_items()
+	{
+		return $this->result->getIterator();
+	}
 
-		// Get primary key
-		$pkinfo = $info->getPrimaryKey();
-		if ($pkinfo) {
-			$pk = array();
-			foreach ($pkinfo->getColumns() as $col) {
-				$pk[] = $col->getName();
-			}
-		} else {
-			$pk = null;
-		}
 
-		return array(
-			'type' => $type,
-			'table' => $table,
-			'primary_key' => $pk,
-			'properties' => $properties,
-		);
+	public function get_total_count()
+	{
+		return $this->total_count;
 	}
 }
 

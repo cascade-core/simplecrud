@@ -30,72 +30,61 @@
 
 namespace SimpleCrud;
 
-
-class DibiDriver extends AbstractDriver
+class ListBlock extends \Block
 {
-	protected $default_query_class = '\SimpleCrud\DibiQueryBuilder';
 
-	private $table;
-	private $dbinfo;
+	protected $inputs = array(
+		'defaults' => null,	// Default values of filters.
+		'*' => null,		// Filters (one per input). These override 'default' input when connected.
+	);
+
+	protected $outputs = array(
+		'items' => true,	// Requested items
+		'filters' => true,	// Used filters
+		'total_count' => true,	// Total count of matching items (without limit)
+		'done' => true,		// True, if count > 0
+	);
+
+	private $driver;
+	private $prefix;
+	private $config;
 
 
-	public function __construct($prefix, $config)
+	/**
+	 * Setup block to act as expected. Configuration is done by SimpleCrud 
+	 * Block Storage.
+	 */
+	public function __construct($driver, $prefix, $config)
 	{
-		parent::__construct($prefix, $config);
-
-		$this->table = $this->config['db_table'];
-		$this->dbinfo = \dibi::getDatabaseInfo();
+		$this->driver = $driver;
+		$this->prefix = $prefix;
+		$this->config = $config;
 	}
 
 
-	public function get_config($key = null)
+	public function main()
 	{
-		if ($key === null) {
-			return $this->config;
-		} else {
-			return $this->config[$key];
+		// Collect filters
+		$filters = (array) $this->in('defaults');
+		foreach ($this->input_names() as $input) {
+			$filters[$input] = $this->in($input);
 		}
+
+		// Query items
+		$query = $this->driver->prepare_query();
+		$query->add_filters($filters);
+		$query->execute();
+
+		// Get results
+		$items = $query->get_items();
+		$total_count = $query->get_total_count();
+
+		$this->out('items', $items);
+		$this->out('filters', $filters);
+		$this->out('total_count', $total_count);
+		$this->out('done', count($items) > 0);
 	}
 
-
-	public function describe()
-	{
-		if (!$this->dbinfo->hasTable($this->table)) {
-			error_msg('Requested table "%s" does not exist!', $this->table);
-			return false;
-		}
-
-		$info = $this->dbinfo->getTable($this->table);
-
-		// Get properties
-		$properties = array();
-		foreach($info->getColumns() as $col) {
-			$properties[$col->getName()] = array(
-				'name' => $col->getName(),
-				'type' => $col->getNativeType(),
-				'size' => $col->getSize(),
-				'default' => $col->getDefault(),
-				'optional' => $col->isNullable(),
-			);
-		}
-
-		// Get primary key
-		$pkinfo = $info->getPrimaryKey();
-		if ($pkinfo) {
-			$pk = array();
-			foreach ($pkinfo->getColumns() as $col) {
-				$pk[] = $col->getName();
-			}
-		} else {
-			$pk = null;
-		}
-
-		return array(
-			'type' => $type,
-			'table' => $table,
-			'primary_key' => $pk,
-			'properties' => $properties,
-		);
-	}
 }
+
 

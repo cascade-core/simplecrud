@@ -12,6 +12,7 @@
 name = "Human-friendly name"
 comment = "Not too long description of this entity. Use whole sentences here."
 driver_class = "\SimpleCrud\DibiDriver"
+query_class = "SomeSqlQueryBuilderClass"
 db_table = "some_table"
 
 

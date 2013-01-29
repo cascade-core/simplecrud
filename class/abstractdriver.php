@@ -35,6 +35,8 @@ abstract class AbstractDriver
 	protected $prefix;
 	protected $config;
 
+	protected $default_query_class;
+
 
 	public function __construct($prefix, $config)
 	{
@@ -47,6 +49,19 @@ abstract class AbstractDriver
 	 * Describe properties of this entity.
 	 */
 	public abstract function describe();
-	
+
+
+	/**
+	 * Create query builder.
+	 */
+	public function prepare_query()
+	{
+		if (empty($this->config['query_class'])) {
+			return new $this->default_query_class($this);
+		} else {
+			return new $this->config['query_class']($this);
+		}
+	}
+
 }
 

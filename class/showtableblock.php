@@ -30,72 +30,59 @@
 
 namespace SimpleCrud;
 
-
-class DibiDriver extends AbstractDriver
+class ShowTableBlock extends \Block
 {
-	protected $default_query_class = '\SimpleCrud\DibiQueryBuilder';
 
-	private $table;
-	private $dbinfo;
+	protected $inputs = array(
+		'items' => null,
+		'slot' => 'default',
+		'slot_weight' => 50,
+	);
+
+	protected $outputs = array(
+		'done' => true,
+	);
+
+	const force_exec = true;
 
 
-	public function __construct($prefix, $config)
+	private $driver;
+	private $prefix;
+	private $config;
+
+
+	/**
+	 * Setup block to act as expected. Configuration is done by SimpleCrud 
+	 * Block Storage.
+	 */
+	public function __construct($driver, $prefix, $config)
 	{
-		parent::__construct($prefix, $config);
-
-		$this->table = $this->config['db_table'];
-		$this->dbinfo = \dibi::getDatabaseInfo();
+		$this->driver = $driver;
+		$this->prefix = $prefix;
+		$this->config = $config;
 	}
 
 
-	public function get_config($key = null)
+	public function main()
 	{
-		if ($key === null) {
-			return $this->config;
-		} else {
-			return $this->config[$key];
+		$items = $this->in('items');
+
+		$description = $this->driver->describe();
+		$table = new \TableView();
+
+		foreach ($description['properties'] as $p => $prop) {
+			$table->add_column('text', array(
+					'title' => $p,
+					'key' => $p,
+				));
 		}
+
+		$table->set_data($items);
+                $this->template_add(null, 'core/table', $table);
+                $this->out('done', true);		
 	}
 
-
-	public function describe()
-	{
-		if (!$this->dbinfo->hasTable($this->table)) {
-			error_msg('Requested table "%s" does not exist!', $this->table);
-			return false;
-		}
-
-		$info = $this->dbinfo->getTable($this->table);
-
-		// Get properties
-		$properties = array();
-		foreach($info->getColumns() as $col) {
-			$properties[$col->getName()] = array(
-				'name' => $col->getName(),
-				'type' => $col->getNativeType(),
-				'size' => $col->getSize(),
-				'default' => $col->getDefault(),
-				'optional' => $col->isNullable(),
-			);
-		}
-
-		// Get primary key
-		$pkinfo = $info->getPrimaryKey();
-		if ($pkinfo) {
-			$pk = array();
-			foreach ($pkinfo->getColumns() as $col) {
-				$pk[] = $col->getName();
-			}
-		} else {
-			$pk = null;
-		}
-
-		return array(
-			'type' => $type,
-			'table' => $table,
-			'primary_key' => $pk,
-			'properties' => $properties,
-		);
-	}
 }
+
+
 

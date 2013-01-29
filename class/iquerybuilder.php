@@ -30,72 +30,37 @@
 
 namespace SimpleCrud;
 
-
-class DibiDriver extends AbstractDriver
+interface IQueryBuilder
 {
-	protected $default_query_class = '\SimpleCrud\DibiQueryBuilder';
 
-	private $table;
-	private $dbinfo;
-
-
-	public function __construct($prefix, $config)
-	{
-		parent::__construct($prefix, $config);
-
-		$this->table = $this->config['db_table'];
-		$this->dbinfo = \dibi::getDatabaseInfo();
-	}
+	/**
+	 * Create query builder with given database driver.
+	 */
+	public function __construct(AbstractDriver $driver);
 
 
-	public function get_config($key = null)
-	{
-		if ($key === null) {
-			return $this->config;
-		} else {
-			return $this->config[$key];
-		}
-	}
+	/**
+	 * Add filters to query. Keys are filter names, values are options.
+	 */
+	public function add_filters($filters);
 
 
-	public function describe()
-	{
-		if (!$this->dbinfo->hasTable($this->table)) {
-			error_msg('Requested table "%s" does not exist!', $this->table);
-			return false;
-		}
+	/**
+	 * Execute query.
+	 */
+	public function execute();
 
-		$info = $this->dbinfo->getTable($this->table);
 
-		// Get properties
-		$properties = array();
-		foreach($info->getColumns() as $col) {
-			$properties[$col->getName()] = array(
-				'name' => $col->getName(),
-				'type' => $col->getNativeType(),
-				'size' => $col->getSize(),
-				'default' => $col->getDefault(),
-				'optional' => $col->isNullable(),
-			);
-		}
+	/**
+	 * Returns iteratable object or array with result.
+	 */
+	public function get_items();
 
-		// Get primary key
-		$pkinfo = $info->getPrimaryKey();
-		if ($pkinfo) {
-			$pk = array();
-			foreach ($pkinfo->getColumns() as $col) {
-				$pk[] = $col->getName();
-			}
-		} else {
-			$pk = null;
-		}
 
-		return array(
-			'type' => $type,
-			'table' => $table,
-			'primary_key' => $pk,
-			'properties' => $properties,
-		);
-	}
+	/**
+	 * Returns count of all matching items when no count limit is applied.
+	 */
+	public function get_total_count();
+
 }
 

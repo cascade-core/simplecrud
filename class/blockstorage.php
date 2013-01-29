@@ -93,6 +93,12 @@ class BlockStorage implements \IBlockStorage
 			case 'describe':
 				return new DescribeBlock($driver, $prefix, $cfg);
 
+			case 'list':
+				return new ListBlock($driver, $prefix, $cfg);
+
+			case 'show_table':
+				return new ShowTableBlock($driver, $prefix, $cfg);
+
 			default:
 				return false;
 		}
@@ -145,7 +151,9 @@ class BlockStorage implements \IBlockStorage
 	{
 		foreach ($this->config as $prefix => $cfg) {
 			$plugin = preg_replace('/\/.*/', '', $prefix);
-			$blocks[$plugin][] = $prefix.'/'.'describe';
+			foreach (array('describe', 'list', 'show_table') as $b) {
+				$blocks[$plugin][] = $prefix.'/'.$b;
+			}
 		}
 	}
 
