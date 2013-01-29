@@ -28,25 +28,64 @@
  * SUCH DAMAGE.
  */
 
-namespace SimpleCrud;
-
-abstract class AbstractDriver
+class B_simplecrud__show_properties extends Block
 {
-	protected $prefix;
-	protected $config;
+
+	protected $inputs = array(
+		'desc' => array(),
+		'slot' => 'default',
+		'slot_weight' => 50,
+	);
+
+	protected $outputs = array(
+		'done' => true,
+	);
+
+	const force_exec = true;
 
 
-	public function __construct($prefix, $config)
+	public function main()
 	{
-		$this->prefix = $prefix;
-		$this->config = $config;
+		$desc = $this->in('desc');
+		if (!$desc) {
+			return;
+		}
+
+		$table = new TableView();
+
+		$table->add_column('text', array(
+				'title' => _('PK'),
+				'title_tooltip' => _('Primary key'),
+				'value' => function($row) use ($desc) { return in_array($row['name'], $desc['primary_key']) ? _("\xE2\x97\x8F") : ''; },
+				'width' => '1%',
+			));
+		$table->add_column('text', array(
+				'title' => _('Property'),
+				'key' => 'name',
+			));
+		$table->add_column('text', array(
+				'title' => _('Type'),
+				'key' => 'type',
+			));
+		$table->add_column('number', array(
+				'title' => _('Size'),
+				'value' => function($row) { return $row['size'] > 0 ? $row['size'] : null; },
+				'width' => '1%',
+			));
+		$table->add_column('text', array(
+				'title' => _('Default value'),
+				'key' => 'default',
+			));
+		$table->add_column('text', array(
+				'title' => _('Optional'),
+				'value' => function($row) { return $row['optional'] ? _('Yes') : _('No'); },
+			));
+
+		$table->set_data($desc['properties']);
+                $this->template_add(null, 'core/table', $table);
+                $this->out('done', true);		
 	}
 
-
-	/**
-	 * Describe properties of this entity.
-	 */
-	public abstract function describe();
-	
 }
+
 

@@ -30,23 +30,48 @@
 
 namespace SimpleCrud;
 
-abstract class AbstractDriver
+class DescribeBlock extends \Block
 {
-	protected $prefix;
-	protected $config;
+
+	protected $inputs = array(
+	);
+
+	protected $outputs = array(
+		'name' => true,
+		'comment' => true,
+		'prefix' => true,
+		'desc' => true,
+		'done' => true,
+	);
+
+	private $driver;
+	private $prefix;
+	private $config;
 
 
-	public function __construct($prefix, $config)
+	/**
+	 * Setup block to act as expected. Configuration is done by SimpleCrud 
+	 * Block Storage.
+	 */
+	public function __construct($driver, $prefix, $config)
 	{
+		$this->driver = $driver;
 		$this->prefix = $prefix;
 		$this->config = $config;
 	}
 
 
-	/**
-	 * Describe properties of this entity.
-	 */
-	public abstract function describe();
-	
+	public function main()
+	{
+		$description = $this->driver->describe();
+
+		$this->out('name', $this->config['name']);
+		$this->out('comment', $this->config['comment']);
+		$this->out('prefix', $this->prefix);
+		$this->out('desc', $description);
+		$this->out('done', true);
+	}
+
 }
+
 

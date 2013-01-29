@@ -33,5 +33,57 @@ namespace SimpleCrud;
 
 class DibiDriver extends AbstractDriver
 {
+	private $table;
+	private $dbinfo;
+
+
+	public function __construct($prefix, $config)
+	{
+		parent::__construct($prefix, $config);
+
+		$this->table = $this->config['db_table'];
+		$this->dbinfo = \dibi::getDatabaseInfo();
+	}
+
+
+	public function describe()
+	{
+		if (!$this->dbinfo->hasTable($this->table)) {
+			error_msg('Requested table "%s" does not exist!', $this->table);
+			return false;
+		}
+
+		$info = $this->dbinfo->getTable($this->table);
+
+		// Get properties
+		$properties = array();
+		foreach($info->getColumns() as $col) {
+			$properties[$col->getName()] = array(
+				'name' => $col->getName(),
+				'type' => $col->getNativeType(),
+				'size' => $col->getSize(),
+				'default' => $col->getDefault(),
+				'optional' => $col->isNullable(),
+			);
+		}
+
+		// Get primary key
+		$pkinfo = $info->getPrimaryKey();
+		if ($pkinfo) {
+			$pk = array();
+			foreach ($pkinfo->getColumns() as $col) {
+				$pk[] = $col->getName();
+			}
+		} else {
+			$pk = null;
+		}
+
+		return array(
+			'type' => $type,
+			'table' => $table,
+			'primary_key' => $pk,
+			'properties' => $properties,
+		);
+	}
 }
 

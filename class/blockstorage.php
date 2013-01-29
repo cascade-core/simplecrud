@@ -33,6 +33,7 @@ namespace SimpleCrud;
 class BlockStorage implements \IBlockStorage
 {
 	private $config;
+	private $drivers = array();
 
 	/**
 	 * Constructor will get options from core.ini.php file.
@@ -70,6 +71,31 @@ class BlockStorage implements \IBlockStorage
 	 */
 	public function create_block_instance ($block)
 	{
+		$prefix = dirname($block);
+
+		// Check if block exists
+		if (!isset($this->config[$prefix])) {
+			return false;
+		}
+		$cfg = $this->config[$prefix];
+
+		// Prepare driver
+		if (isset($this->drivers[$prefix])) {
+			$driver = $this->drivers[$prefix];
+		} else {
+			$driver = new $cfg['driver_class']($prefix, $cfg);
+			$this->drivers[$prefix] = $driver;
+		}
+
+		// Create requested block
+		$block_name = basename($block);
+		switch ($block_name) {
+			case 'describe':
+				return new DescribeBlock($driver, $prefix, $cfg);
+
+			default:
+				return false;
+		}
 	}
 
 
@@ -78,7 +104,7 @@ class BlockStorage implements \IBlockStorage
 	 */
 	public function load_block ($block)
 	{
-		return false;
+		return isset($this->config[dirname($block)]);
 	}
 
 
@@ -117,7 +143,10 @@ class BlockStorage implements \IBlockStorage
 	 */
 	public function get_known_blocks (& $blocks = array())
 	{
-		return array();
+		foreach ($this->config as $prefix => $cfg) {
+			$plugin = preg_replace('/\/.*/', '', $prefix);
+			$blocks[$plugin][] = $prefix.'/'.'describe';
+		}
 	}
 
 }
