@@ -32,12 +32,23 @@ namespace SimpleCrud;
 
 class BlockStorage implements \IBlockStorage
 {
+	private $config;
 
 	/**
 	 * Constructor will get options from core.ini.php file.
 	 */
 	public function __construct($storage_opts)
 	{
+		$this->config = parse_ini_file($storage_opts, TRUE);
+	}
+
+
+	/**
+	 * Returns current configuration.
+	 */
+	public function get_configuration()
+	{
+		return $this->config;
 	}
 
 

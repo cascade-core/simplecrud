@@ -13,7 +13,6 @@ name = "Human-friendly name"
 description = "Not too long description of this entity. Use whole sentences here."
 driver_class = "\SimpleCrud\DibiDriver"
 db_table = "some_table"
-primary_key = "id"
 
 
 ; vim:filetype=dosini:
