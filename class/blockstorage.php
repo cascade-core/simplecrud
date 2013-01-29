@@ -35,12 +35,33 @@ class BlockStorage implements \IBlockStorage
 	private $config;
 	private $drivers = array();
 
+	private $block_classes = array(
+			'describe'   => '\\SimpleCrud\\DescribeBlock',
+			'list'       => '\\SimpleCrud\\ListBlock',
+			'show_table' => '\\SimpleCrud\\ShowTableBlock',
+			'show_list'  => '\\SimpleCrud\\ShowListBlock',
+	);
+
 	/**
 	 * Constructor will get options from core.ini.php file.
 	 */
 	public function __construct($storage_opts)
 	{
 		$this->config = json_decode(file_get_contents($storage_opts), TRUE);
+
+		if ($this->config === null) {
+			$err_code = json_last_error();
+			switch ($err_code) {
+				case JSON_ERROR_NONE:           $err = 'No error has occurred.'; break;
+				case JSON_ERROR_DEPTH:          $err = 'The maximum stack depth has been exceeded.'; break;
+				case JSON_ERROR_STATE_MISMATCH: $err = 'Invalid or malformed JSON.'; break;
+				case JSON_ERROR_CTRL_CHAR:      $err = 'Control character error, possibly incorrectly encoded.'; break;
+				case JSON_ERROR_SYNTAX:         $err = 'Syntax error.'; break;
+				case JSON_ERROR_UTF8:           $err = 'Malformed UTF-8 characters, possibly incorrectly encoded.'; break;
+				default:                        $err = "#".$err_code; break;
+			}
+			error_msg("Failed to load config file \"%s\": %s", $storage_opts, $err);
+		}
 	}
 
 
@@ -89,18 +110,10 @@ class BlockStorage implements \IBlockStorage
 
 		// Create requested block
 		$block_name = basename($block);
-		switch ($block_name) {
-			case 'describe':
-				return new DescribeBlock($driver, $prefix, $cfg);
-
-			case 'list':
-				return new ListBlock($driver, $prefix, $cfg);
-
-			case 'show_table':
-				return new ShowTableBlock($driver, $prefix, $cfg);
-
-			default:
-				return false;
+		if (array_key_exists($block_name, $this->block_classes)) {
+			return new $this->block_classes[$block_name]($driver, $prefix, $cfg);
+		} else {
+			return false;
 		}
 	}
 
@@ -151,7 +164,7 @@ class BlockStorage implements \IBlockStorage
 	{
 		foreach ($this->config['entities'] as $prefix => $cfg) {
 			$plugin = preg_replace('/\/.*/', '', $prefix);
-			foreach (array('describe', 'list', 'show_table') as $b) {
+			foreach ($this->block_classes as $b => $c) {
 				$blocks[$plugin][] = $prefix.'/'.$b;
 			}
 		}

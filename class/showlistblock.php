@@ -30,71 +30,63 @@
 
 namespace SimpleCrud;
 
-
-class DibiDriver extends AbstractDriver
+class ShowListBlock extends \Block
 {
-	protected $default_query_class = '\SimpleCrud\DibiQueryBuilder';
 
-	private $table;
-	private $dbinfo;
+	protected $inputs = array(
+		'items' => null,		// Items to show
+		'preset' => 'list',		// Preset used to format items (as specified in configuration)
+		'slot' => 'default',
+		'slot_weight' => 50,
+	);
+
+	protected $outputs = array(
+		'done' => true,
+	);
+
+	const force_exec = true;
 
 
-	public function __construct($prefix, $config)
+	private $driver;
+	private $prefix;
+	private $config;
+
+
+	/**
+	 * Setup block to act as expected. Configuration is done by SimpleCrud 
+	 * Block Storage.
+	 */
+	public function __construct($driver, $prefix, $config)
 	{
-		parent::__construct($prefix, $config);
-
-		$this->table = $this->config['db_table'];
-		$this->dbinfo = \dibi::getDatabaseInfo();
+		$this->driver = $driver;
+		$this->prefix = $prefix;
+		$this->config = $config;
 	}
 
 
-	public function get_config($key = null)
+	public function main()
 	{
-		if ($key === null) {
-			return $this->config;
-		} else {
-			return $this->config[$key];
+		$items = $this->in('items');
+		$preset = $this->in('preset');
+
+		// Stop if there is nothing to show.
+		if (empty($items)) {
+			return;
 		}
+
+		// Get view configuration
+		if (!array_key_exists($preset, $this->config['views'])) {
+			error_msg("View preset \"%s\" is not defined for prefix \"%s\".", $preset, $this->prefix);
+			return;
+		}
+
+		$view_cfg = $this->config['views'][$preset];
+		$view_cfg['items'] = $items;
+
+		$this->template_add(null, $view_cfg['template'], $view_cfg);
+
+                $this->out('done', true);		
 	}
 
-
-	public function describe()
-	{
-		if (!$this->dbinfo->hasTable($this->table)) {
-			error_msg('Requested table "%s" does not exist!', $this->table);
-			return false;
-		}
-
-		$info = $this->dbinfo->getTable($this->table);
-
-		// Get properties
-		$properties = array();
-		foreach($info->getColumns() as $col) {
-			$properties[$col->getName()] = array(
-				'name' => $col->getName(),
-				'type' => $col->getNativeType(),
-				'size' => $col->getSize(),
-				'default' => $col->getDefault(),
-				'optional' => $col->isNullable(),
-			);
-		}
-
-		// Get primary key
-		$pkinfo = $info->getPrimaryKey();
-		if ($pkinfo) {
-			$pk = array();
-			foreach ($pkinfo->getColumns() as $col) {
-				$pk[] = $col->getName();
-			}
-		} else {
-			$pk = null;
-		}
-
-		return array(
-			'table' => $this->table,
-			'primary_key' => $pk,
-			'properties' => $properties,
-		);
-	}
 }
 
