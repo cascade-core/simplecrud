@@ -18,11 +18,13 @@ function TPL_html5__simplecrud__list($t, $id, $d, $so)
 	}
 
 	// Holder
-	echo "<$list_element";
-	if (!empty($list_class)) {
-		echo " class=\"", htmlspecialchars($list_class), "\"";
+	if ($list_element) {
+		echo "<$list_element";
+		if (!empty($list_class)) {
+			echo " class=\"", htmlspecialchars($list_class), "\"";
+		}
+		echo ">\n";
 	}
-	echo ">\n";
 
 	// Item holder options
 	$item_element = @ $item_holder['element'];
@@ -34,6 +36,11 @@ function TPL_html5__simplecrud__list($t, $id, $d, $so)
 	// Check and fill missing field options
 	$prepared_fields = array();
 	foreach ($fields as $field) {
+		if (!empty($field['hidden'])) {
+			// Skip removed fields
+			continue;
+		}
+
 		$key = @ $field['key'];
 		$value = @ $field['value'];
 
@@ -120,6 +127,8 @@ function TPL_html5__simplecrud__list($t, $id, $d, $so)
 	}
 
 	// End of holder
-	echo "</$list_element>\n";
+	if ($list_element) {
+		echo "</$list_element>\n";
+	}
 }
 

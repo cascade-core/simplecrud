@@ -30,54 +30,30 @@
 
 namespace SimpleCrud;
 
-class DibiQueryBuilder implements IQueryBuilder
+class ShowItemBlock extends ShowListBlock
 {
-	private $query;
-	private $result;
-	private $total_count;
 
-	public function __construct(AbstractDriver $driver)
+	protected $inputs = array(
+		'item' => null,			// Item to show
+		'preset' => 'item',		// Preset used to format item (as specified in configuration)
+		'slot' => 'default',
+		'slot_weight' => 50,
+	);
+
+
+	public function main()
 	{
-		$this->query = \dibi::select('*');
-		$this->query->setFlag('SQL_CALC_FOUND_ROWS');
-		$this->query->from($driver->get_config('db_table'));
+		$item = $this->in('item');
+		$preset = $this->in('preset');
 
-		// Default limit (filters can override this)
-		$this->query->limit(50);
+		// Get view configuration
+		$view_cfg = $this->calculate_view_config($preset);
+		$view_cfg['items'] = array($item);
+
+		$this->template_add(null, $view_cfg['template'], $view_cfg);
+
+                $this->out('done', true);
 	}
 
-
-	public function add_filters($filters)
-	{
-		foreach ($filters as $filter => $value) {
-		}
-	}
-
-
-	public function execute()
-	{
-		$this->result = $this->query->execute();
-		$this->total_count = \dibi::query('SELECT FOUND_ROWS()')->fetchSingle();
-	}
-
-
-	public function get_items()
-	{
-		return $this->result->getIterator();
-	}
-
-
-	public function get_single_item()
-	{
-		$item = $this->result->fetch();
-		$this->result->free();
-		return $item;
-	}
-
-
-	public function get_total_count()
-	{
-		return $this->total_count;
-	}
 }
 

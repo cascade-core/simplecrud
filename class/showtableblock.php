@@ -46,9 +46,9 @@ class ShowTableBlock extends \Block
 	const force_exec = true;
 
 
-	private $driver;
-	private $prefix;
-	private $config;
+	protected $driver;
+	protected $prefix;
+	protected $config;
 
 
 	/**

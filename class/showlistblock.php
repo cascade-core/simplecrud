@@ -47,13 +47,13 @@ class ShowListBlock extends \Block
 	const force_exec = true;
 
 
-	private $driver;
-	private $prefix;
-	private $config;
+	protected $driver;
+	protected $prefix;
+	protected $config;
 
 
 	/**
-	 * Setup block to act as expected. Configuration is done by SimpleCrud 
+	 * Setup block to act as expected. Configuration is done by SimpleCrud
 	 * Block Storage.
 	 */
 	public function __construct($driver, $prefix, $config)
@@ -75,17 +75,58 @@ class ShowListBlock extends \Block
 		}
 
 		// Get view configuration
+		$view_cfg = $this->calculate_view_config($preset);
+		$view_cfg['items'] = $items;
+
+		$this->template_add(null, $view_cfg['template'], $view_cfg);
+
+                $this->out('done', true);
+	}
+
+
+	protected function calculate_view_config($preset)
+	{
 		if (!array_key_exists($preset, $this->config['views'])) {
 			error_msg("View preset \"%s\" is not defined for prefix \"%s\".", $preset, $this->prefix);
 			return;
 		}
 
 		$view_cfg = $this->config['views'][$preset];
-		$view_cfg['items'] = $items;
 
-		$this->template_add(null, $view_cfg['template'], $view_cfg);
+		$used_presets = array(
+			$preset => true,
+		);
 
-                $this->out('done', true);		
+		// Resolve inheritance
+		while (!empty($view_cfg['extends'])) {
+			$extends = $view_cfg['extends'];
+			unset($view_cfg['extends']);
+
+			if (!array_key_exists($extends, $this->config['views'])) {
+				error_msg("Parent preset \"%s\" is not defined for prefix \"%s\".", $preset, $this->prefix);
+				return;
+			}
+
+			if (isset($used_presets[$extends])) {
+				error_msg('Cyclic inheritance detected while composing preset "%s" (circle closes at "%s") for prefix "%s".',
+					$preset, $extends, $this->prefix);
+				return false;
+			}
+
+			$parent_cfg = $this->config['views'][$extends];
+			$used_presets[$extends] = true;
+
+			$view_cfg = array_merge_recursive($parent_cfg, $view_cfg);
+		}
+
+		// Sort fields by weight
+		if (is_array($view_cfg['fields'])) {
+			uasort($view_cfg['fields'], function($a, $b) {
+					return (isset($a['weight']) ? $a['weight'] : 50) - (isset($b['weight']) ? $b['weight'] : 50);
+				});
+		}
+
+		return $view_cfg;
 	}
 
 }

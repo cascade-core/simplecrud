@@ -37,9 +37,11 @@ class BlockStorage implements \IBlockStorage
 
 	private $block_classes = array(
 			'describe'   => '\\SimpleCrud\\DescribeBlock',
+			'read'       => '\\SimpleCrud\\ReadBlock',
 			'list'       => '\\SimpleCrud\\ListBlock',
 			'show_table' => '\\SimpleCrud\\ShowTableBlock',
 			'show_list'  => '\\SimpleCrud\\ShowListBlock',
+			'show_item'  => '\\SimpleCrud\\ShowItemBlock',
 	);
 
 	/**

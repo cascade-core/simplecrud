@@ -45,9 +45,9 @@ class ListBlock extends \Block
 		'done' => true,		// True, if count > 0
 	);
 
-	private $driver;
-	private $prefix;
-	private $config;
+	protected $driver;
+	protected $prefix;
+	protected $config;
 
 
 	/**

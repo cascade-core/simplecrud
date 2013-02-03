@@ -44,9 +44,9 @@ class DescribeBlock extends \Block
 		'done' => true,
 	);
 
-	private $driver;
-	private $prefix;
-	private $config;
+	protected $driver;
+	protected $prefix;
+	protected $config;
 
 
 	/**

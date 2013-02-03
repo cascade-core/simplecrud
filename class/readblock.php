@@ -30,54 +30,67 @@
 
 namespace SimpleCrud;
 
-class DibiQueryBuilder implements IQueryBuilder
+class ReadBlock extends \Block
 {
-	private $query;
-	private $result;
-	private $total_count;
 
-	public function __construct(AbstractDriver $driver)
+	protected $inputs = array(
+		'id' => null,
+	);
+
+	protected $outputs = array(
+		'item' => true,		// Requested item
+		'done' => true,		// True, if found
+	);
+
+	protected $driver;
+	protected $prefix;
+	protected $config;
+
+
+	/**
+	 * Setup block to act as expected. Configuration is done by SimpleCrud 
+	 * Block Storage.
+	 */
+	public function __construct($driver, $prefix, $config)
 	{
-		$this->query = \dibi::select('*');
-		$this->query->setFlag('SQL_CALC_FOUND_ROWS');
-		$this->query->from($driver->get_config('db_table'));
+		$this->driver = $driver;
+		$this->prefix = $prefix;
+		$this->config = $config;
 
-		// Default limit (filters can override this)
-		$this->query->limit(50);
+		$desc = $this->driver->describe();
+
+		// Use primary keys as input
+		$this->inputs = array_fill_keys($desc['primary_key'], null);
+
+		// Prepare outputs for properties
+		$this->outputs = array_fill_keys(array_keys($desc['properties']), true);
+		$this->outputs['item'] = true;
+		$this->outputs['done'] = true;
 	}
 
 
-	public function add_filters($filters)
+	public function main()
 	{
-		foreach ($filters as $filter => $value) {
+		// Collect filters
+		$filters = (array) $this->in('defaults');
+		foreach ($this->input_names() as $input) {
+			$filters[$input] = $this->in($input);
+		}
+
+		// Query items
+		$query = $this->driver->prepare_query();
+		$query->add_filters($filters);
+		$query->execute();
+
+		// Get results
+		$item = $query->get_single_item();
+
+		if ($item) {
+			$this->out_all((array) $item);
+			$this->out('item', $item);
+			$this->out('done', true);
 		}
 	}
 
-
-	public function execute()
-	{
-		$this->result = $this->query->execute();
-		$this->total_count = \dibi::query('SELECT FOUND_ROWS()')->fetchSingle();
-	}
-
-
-	public function get_items()
-	{
-		return $this->result->getIterator();
-	}
-
-
-	public function get_single_item()
-	{
-		$item = $this->result->fetch();
-		$this->result->free();
-		return $item;
-	}
-
-
-	public function get_total_count()
-	{
-		return $this->total_count;
-	}
 }
 
