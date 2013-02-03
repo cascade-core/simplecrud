@@ -99,11 +99,22 @@ function TPL_html5__simplecrud__list($t, $id, $d, $so)
 				echo "<a href=\"", htmlspecialchars($link_filled), "\">";
 			}
 
-			if ($key !== null) {
-				$value = $item[$key];
+			// Get $key values from $item
+			if ($key !== null && $key !== false) {
+				if (is_array($key)) {
+					$value = array_map(function($k) use ($item) { return $item[$k]; }, $key);
+				} else {
+					$value = $item[$key];
+				}
 			}
+
+			// Call format function
 			if ($format_function !== false) {
-				$value = $format_function($value);
+				if (is_array($value)) {
+					$value = call_user_func_array($format_function, $value);
+				} else {
+					$value = $format_function($value);
+				}
 			}
 
 			echo $value;
