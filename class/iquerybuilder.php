@@ -46,6 +46,12 @@ interface IQueryBuilder
 
 
 	/**
+	 * Get default filter configuration. This enumerates all accepted 
+	 * filters and their default values. Values must be always scalars.
+	 */
+	public function get_default_filters();
+
+	/**
 	 * Execute query.
 	 */
 	public function execute();

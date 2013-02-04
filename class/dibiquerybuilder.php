@@ -35,9 +35,12 @@ class DibiQueryBuilder implements IQueryBuilder
 	private $query;
 	private $result;
 	private $total_count;
+	private $desc;
 
 	public function __construct(AbstractDriver $driver)
 	{
+		$this->desc = $driver->describe();
+
 		$this->query = \dibi::select('*');
 		$this->query->setFlag('SQL_CALC_FOUND_ROWS');
 		$this->query->from($driver->get_config('db_table'));
@@ -49,8 +52,36 @@ class DibiQueryBuilder implements IQueryBuilder
 
 	public function add_filters($filters)
 	{
+		// FIXME: This is very stupid approach, use methods to allow inheritance
+		// It would be also better to implement this logic in abstract class.
 		foreach ($filters as $filter => $value) {
+			if ($value === null) {
+				continue;
+			}
+
+			switch ($filter) {
+				case 'order':
+					if (array_key_exists($value, $this->desc['properties'])) {
+						$this->query->orderBy('`'.$value.'` '.(empty($filters['reverse']) ? 'ASC' : 'DESC'));
+					}
+					break;
+
+				case 'count':
+					$this->query->limit((int) $value);
+					break;
+			}
 		}
+	}
+
+
+	public function get_default_filters()
+	{
+		// TODO: When filters are implemented using methods, use reflection to enumerate them
+		return array(
+			'order' => null,
+			'reverse' => false,
+			'count' => 50,
+		);
 	}
 
 

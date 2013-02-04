@@ -48,6 +48,7 @@ class ListBlock extends \Block
 	protected $driver;
 	protected $prefix;
 	protected $config;
+	protected $query;
 
 
 	/**
@@ -59,6 +60,9 @@ class ListBlock extends \Block
 		$this->driver = $driver;
 		$this->prefix = $prefix;
 		$this->config = $config;
+
+		$this->query = $this->driver->prepare_query();
+		$this->inputs = $this->query->get_default_filters();
 	}
 
 
@@ -71,13 +75,12 @@ class ListBlock extends \Block
 		}
 
 		// Query items
-		$query = $this->driver->prepare_query();
-		$query->add_filters($filters);
-		$query->execute();
+		$this->query->add_filters($filters);
+		$this->query->execute();
 
 		// Get results
-		$items = $query->get_items();
-		$total_count = $query->get_total_count();
+		$items = $this->query->get_items();
+		$total_count = $this->query->get_total_count();
 
 		$this->out('items', $items);
 		$this->out('filters', $filters);
