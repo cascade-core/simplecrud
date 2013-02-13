@@ -30,83 +30,34 @@
 
 namespace SimpleCrud;
 
-
-class DibiDriver extends AbstractDriver
+class FormConfigBlock extends ShowListBlock
 {
-	protected $default_query_class = '\SimpleCrud\DibiQueryBuilder';
 
-	private $table;
-	private $dbinfo;
+	protected $inputs = array(
+		'item' => null,			// Item to show
+		'preset' => 'form',		// Preset used to format item (as specified in configuration)
+	);
+
+	protected $outputs = array(
+		'config' => true,
+		'done' => true,
+	);
 
 
-	public function __construct($prefix, $config)
+	public function main()
 	{
-		parent::__construct($prefix, $config);
+		$item = $this->in('item');
+		$preset = $this->in('preset');
 
-		$this->table = $this->config['db_table'];
-		$this->dbinfo = \dibi::getDatabaseInfo();
-	}
-
-
-	public function get_config($key = null)
-	{
-		if ($key === null) {
-			return $this->config;
-		} else {
-			return $this->config[$key];
-		}
-	}
-
-
-	public function describe()
-	{
-		if (!$this->dbinfo->hasTable($this->table)) {
-			error_msg('Requested table "%s" does not exist!', $this->table);
-			return false;
+		if (!array_key_exists($preset, $this->config['forms'])) {
+			error_msg("Form preset \"%s\" is not defined for prefix \"%s\".", $preset, $this->prefix);
+			return;
 		}
 
-		$info = $this->dbinfo->getTable($this->table);
+		$form_cfg = $this->config['forms'][$preset];
 
-		// Get properties
-		$properties = array();
-		foreach($info->getColumns() as $col) {
-			$properties[$col->getName()] = array(
-				'name' => $col->getName(),
-				'type' => $col->getNativeType(),
-				'size' => $col->getSize(),
-				'default' => $col->getDefault(),
-				'optional' => $col->isNullable(),
-			);
-		}
-
-		// Get primary key
-		$pkinfo = $info->getPrimaryKey();
-		if ($pkinfo) {
-			$pk = array();
-			foreach ($pkinfo->getColumns() as $col) {
-				$pk[] = $col->getName();
-			}
-		} else {
-			$pk = null;
-		}
-
-		return array(
-			'table' => $this->table,
-			'primary_key' => $pk,
-			'properties' => $properties,
-		);
-	}
-
-
-	/**
-	 * Create item
-	 */
-	public function createItem($item)
-	{
-		if (!\dibi::query('INSERT INTO ['.$this->table.']', $item)) {
-			return false;
-		}
-		return \dibi::insertId();
+		$this->out('config', $form_cfg);
+                $this->out('done', !empty($form_cfg));
 	}
 
 }

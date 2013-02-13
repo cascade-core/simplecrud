@@ -30,83 +30,50 @@
 
 namespace SimpleCrud;
 
-
-class DibiDriver extends AbstractDriver
+class CreateBlock extends \Block
 {
-	protected $default_query_class = '\SimpleCrud\DibiQueryBuilder';
 
-	private $table;
-	private $dbinfo;
+	protected $inputs = array(
+		'item' => null,
+	);
 
+	protected $outputs = array(
+		'id' => true,		// ID of created item
+		'done' => true,		// True, if found
+	);
 
-	public function __construct($prefix, $config)
-	{
-		parent::__construct($prefix, $config);
-
-		$this->table = $this->config['db_table'];
-		$this->dbinfo = \dibi::getDatabaseInfo();
-	}
-
-
-	public function get_config($key = null)
-	{
-		if ($key === null) {
-			return $this->config;
-		} else {
-			return $this->config[$key];
-		}
-	}
-
-
-	public function describe()
-	{
-		if (!$this->dbinfo->hasTable($this->table)) {
-			error_msg('Requested table "%s" does not exist!', $this->table);
-			return false;
-		}
-
-		$info = $this->dbinfo->getTable($this->table);
-
-		// Get properties
-		$properties = array();
-		foreach($info->getColumns() as $col) {
-			$properties[$col->getName()] = array(
-				'name' => $col->getName(),
-				'type' => $col->getNativeType(),
-				'size' => $col->getSize(),
-				'default' => $col->getDefault(),
-				'optional' => $col->isNullable(),
-			);
-		}
-
-		// Get primary key
-		$pkinfo = $info->getPrimaryKey();
-		if ($pkinfo) {
-			$pk = array();
-			foreach ($pkinfo->getColumns() as $col) {
-				$pk[] = $col->getName();
-			}
-		} else {
-			$pk = null;
-		}
-
-		return array(
-			'table' => $this->table,
-			'primary_key' => $pk,
-			'properties' => $properties,
-		);
-	}
+	protected $driver;
+	protected $prefix;
+	protected $config;
 
 
 	/**
-	 * Create item
+	 * Setup block to act as expected. Configuration is done by SimpleCrud 
+	 * Block Storage.
 	 */
-	public function createItem($item)
+	public function __construct($driver, $prefix, $config)
 	{
-		if (!\dibi::query('INSERT INTO ['.$this->table.']', $item)) {
-			return false;
+		$this->driver = $driver;
+		$this->prefix = $prefix;
+		$this->config = $config;
+
+		$desc = $this->driver->describe();
+	}
+
+
+	public function main()
+	{
+		$item = $this->in('item');
+		if ($item == null) {
+			return;
 		}
-		return \dibi::insertId();
+
+		$id = $this->driver->createItem($item);
+
+		if ($id !== false) {
+			$this->out('id', $id);
+			$this->out('done', true);
+		}
 	}
 
 }

@@ -69,6 +69,11 @@ class DibiQueryBuilder implements IQueryBuilder
 				case 'count':
 					$this->query->limit((int) $value);
 					break;
+
+				default:
+					if (array_key_exists($filter, $this->desc['properties'])) {
+						$this->query->where('`'.$filter.'` = %s', $value);
+					}
 			}
 		}
 	}

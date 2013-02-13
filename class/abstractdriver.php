@@ -63,5 +63,14 @@ abstract class AbstractDriver
 		}
 	}
 
+
+	/**
+	 * Create item
+	 */
+	public abstract function createItem($item);
+
+
+
+
 }
 

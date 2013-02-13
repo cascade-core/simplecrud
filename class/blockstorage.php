@@ -36,12 +36,14 @@ class BlockStorage implements \IBlockStorage
 	private $drivers = array();
 
 	private $block_classes = array(
-			'describe'   => '\\SimpleCrud\\DescribeBlock',
-			'read'       => '\\SimpleCrud\\ReadBlock',
-			'list'       => '\\SimpleCrud\\ListBlock',
-			'show_table' => '\\SimpleCrud\\ShowTableBlock',
-			'show_list'  => '\\SimpleCrud\\ShowListBlock',
-			'show_item'  => '\\SimpleCrud\\ShowItemBlock',
+			'describe'    => '\\SimpleCrud\\DescribeBlock',
+			'read'        => '\\SimpleCrud\\ReadBlock',
+			'list'        => '\\SimpleCrud\\ListBlock',
+			'create'      => '\\SimpleCrud\\CreateBlock',
+			'form_config' => '\\SimpleCrud\\FormConfigBlock',
+			'show_table'  => '\\SimpleCrud\\ShowTableBlock',
+			'show_list'   => '\\SimpleCrud\\ShowListBlock',
+			'show_item'   => '\\SimpleCrud\\ShowItemBlock',
 	);
 
 	/**
