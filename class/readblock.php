@@ -73,20 +73,20 @@ class ReadBlock extends \Block
 	{
 		// Collect filters
 		$filters = (array) $this->in('defaults');
-		foreach ($this->input_names() as $input) {
+		foreach ($this->inputNames() as $input) {
 			$filters[$input] = $this->in($input);
 		}
 
 		// Query items
-		$query = $this->driver->prepare_query();
-		$query->add_filters($filters);
+		$query = $this->driver->prepareQuery();
+		$query->addFilters($filters);
 		$query->execute();
 
 		// Get results
-		$item = $query->get_single_item();
+		$item = $query->getSingleItem();
 
 		if ($item) {
-			$this->out_all((array) $item);
+			$this->outAll((array) $item);
 			$this->out('item', $item);
 			$this->out('done', true);
 		}

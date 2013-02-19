@@ -61,8 +61,8 @@ class ListBlock extends \Block
 		$this->prefix = $prefix;
 		$this->config = $config;
 
-		$this->query = $this->driver->prepare_query();
-		$this->inputs = $this->query->get_default_filters();
+		$this->query = $this->driver->prepareQuery();
+		$this->inputs = $this->query->getDefaultFilters();
 	}
 
 
@@ -70,17 +70,17 @@ class ListBlock extends \Block
 	{
 		// Collect filters
 		$filters = (array) $this->in('defaults');
-		foreach ($this->input_names() as $input) {
+		foreach ($this->inputNames() as $input) {
 			$filters[$input] = $this->in($input);
 		}
 
 		// Query items
-		$this->query->add_filters($filters);
+		$this->query->addFilters($filters);
 		$this->query->execute();
 
 		// Get results
-		$items = $this->query->get_items();
-		$total_count = $this->query->get_total_count();
+		$items = $this->query->getItems();
+		$total_count = $this->query->getTotalCount();
 
 		$this->out('items', $items);
 		$this->out('filters', $filters);

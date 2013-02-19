@@ -54,10 +54,10 @@ abstract class AbstractDriver
 	/**
 	 * Create query builder.
 	 */
-	public function prepare_query()
+	public function prepareQuery()
 	{
 		if (empty($this->config['query_class'])) {
-			return new $this->default_query_class($this);
+			return new $this->defaultQueryClass($this);
 		} else {
 			return new $this->config['query_class']($this);
 		}

@@ -42,14 +42,14 @@ interface IQueryBuilder
 	/**
 	 * Add filters to query. Keys are filter names, values are options.
 	 */
-	public function add_filters($filters);
+	public function addFilters($filters);
 
 
 	/**
 	 * Get default filter configuration. This enumerates all accepted 
 	 * filters and their default values. Values must be always scalars.
 	 */
-	public function get_default_filters();
+	public function getDefaultFilters();
 
 	/**
 	 * Execute query.
@@ -60,13 +60,13 @@ interface IQueryBuilder
 	/**
 	 * Returns iteratable object or array with result.
 	 */
-	public function get_items();
+	public function getItems();
 
 
 	/**
 	 * Returns count of all matching items when no count limit is applied.
 	 */
-	public function get_total_count();
+	public function getTotalCount();
 
 }
 

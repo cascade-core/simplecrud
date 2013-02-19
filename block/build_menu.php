@@ -47,9 +47,9 @@ class B_simplecrud__build_menu extends Block
 		$link = $this->in('link');
 		$items = array();
 
-		foreach ($this->get_cascade_controller()->get_block_storages() as $storage) {
+		foreach ($this->getCascadeController()->getBlockStorages() as $storage) {
 			if ($storage instanceof \SimpleCrud\BlockStorage) {
-				foreach ($storage->get_configuration() as $prefix => $cfg) {
+				foreach ($storage->getConfiguration() as $prefix => $cfg) {
 					$items[] = array(
 						'title' => $cfg['name'],
 						'link' => str_replace('_', '-', filename_format($link, array_merge($cfg, array('prefix' => $prefix)))),

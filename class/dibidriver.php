@@ -48,7 +48,7 @@ class DibiDriver extends AbstractDriver
 	}
 
 
-	public function get_config($key = null)
+	public function getConfig($key = null)
 	{
 		if ($key === null) {
 			return $this->config;

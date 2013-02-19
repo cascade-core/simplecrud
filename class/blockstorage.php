@@ -72,7 +72,7 @@ class BlockStorage implements \IBlockStorage
 	/**
 	 * Returns current configuration.
 	 */
-	public function get_configuration()
+	public function getConfiguration()
 	{
 		return $this->config;
 	}
@@ -83,7 +83,7 @@ class BlockStorage implements \IBlockStorage
 	 * create blocks. When creating or modifying block, first storage that 
 	 * returns true will be used.
 	 */
-	public function is_read_only()
+	public function isReadOnly()
 	{
 		return true;
 	}
@@ -94,7 +94,7 @@ class BlockStorage implements \IBlockStorage
 	 * No further initialisation here, that is job for cascade controller. 
 	 * Returns created instance or false.
 	 */
-	public function create_block_instance ($block)
+	public function createBlockInstance($block)
 	{
 		$prefix = dirname($block);
 
@@ -125,7 +125,7 @@ class BlockStorage implements \IBlockStorage
 	/**
 	 * Load block configuration. Returns false if block is not found.
 	 */
-	public function load_block ($block)
+	public function loadBlock($block)
 	{
 		return isset($this->config['entities'][dirname($block)]);
 	}
@@ -134,7 +134,7 @@ class BlockStorage implements \IBlockStorage
 	/**
 	 * Store block configuration.
 	 */
-	public function store_block ($block, $config)
+	public function storeBlock($block, $config)
 	{
 		// This is read-only storage.
 		return false;
@@ -144,7 +144,7 @@ class BlockStorage implements \IBlockStorage
 	/**
 	 * Delete block configuration.
 	 */
-	public function delete_block ($block)
+	public function deleteBlock($block)
 	{
 		// This is read-only storage.
 		return false;
@@ -154,7 +154,7 @@ class BlockStorage implements \IBlockStorage
 	/**
 	 * Get time (unix timestamp) of last modification of the block.
 	 */
-	public function block_mtime ($block)
+	public function blockMTime($block)
 	{
 		// All blocks are generated on demand = no mtime.
 		return 0;
@@ -164,7 +164,7 @@ class BlockStorage implements \IBlockStorage
 	/**
 	 * List all available blocks in this storage.
 	 */
-	public function get_known_blocks (& $blocks = array())
+	public function getKnownBlocks(& $blocks = array())
 	{
 		foreach ($this->config['entities'] as $prefix => $cfg) {
 			$plugin = preg_replace('/\/.*/', '', $prefix);

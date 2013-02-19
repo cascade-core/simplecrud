@@ -43,14 +43,14 @@ class DibiQueryBuilder implements IQueryBuilder
 
 		$this->query = \dibi::select('*');
 		$this->query->setFlag('SQL_CALC_FOUND_ROWS');
-		$this->query->from($driver->get_config('db_table'));
+		$this->query->from($driver->getConfig('db_table'));
 
 		// Default limit (filters can override this)
 		$this->query->limit(50);
 	}
 
 
-	public function add_filters($filters)
+	public function addFilters($filters)
 	{
 		// FIXME: This is very stupid approach, use methods to allow inheritance
 		// It would be also better to implement this logic in abstract class.
@@ -79,7 +79,7 @@ class DibiQueryBuilder implements IQueryBuilder
 	}
 
 
-	public function get_default_filters()
+	public function getDefaultFilters()
 	{
 		// TODO: When filters are implemented using methods, use reflection to enumerate them
 		return array(
@@ -97,13 +97,13 @@ class DibiQueryBuilder implements IQueryBuilder
 	}
 
 
-	public function get_items()
+	public function getItems()
 	{
 		return $this->result->getIterator();
 	}
 
 
-	public function get_single_item()
+	public function getSingleItem()
 	{
 		$item = $this->result->fetch();
 		$this->result->free();
@@ -111,7 +111,7 @@ class DibiQueryBuilder implements IQueryBuilder
 	}
 
 
-	public function get_total_count()
+	public function getTotalCount()
 	{
 		return $this->total_count;
 	}
